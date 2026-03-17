@@ -13,12 +13,11 @@
     "build:front": "vite build",
     "build:backend": "npm --prefix backend run build",
     "make:ico": "node ./scripts/make-ico.mjs",
-    "make:icns": "node ./scripts/make-icns.mjs",
     "dist:win": "npm run make:ico && npm run build:front && npm run build:backend && electron-builder -w",
-    "dist:mac": "npm run make:icns && npm run build:front && npm run build:backend && electron-builder -m",
-    "dist:mac:unsigned": "npm run make:icns && npm run build:front && npm run build:backend && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -m -p never",
-    "dist:mac:unsigned:arm64": "npm run make:icns && npm run build:front && npm run build:backend && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -m -p never --arm64",
-    "dist:mac:unsigned:x64": "npm run make:icns && npm run build:front && npm run build:backend && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -m -p never --x64",
+    "dist:mac": "npm run build:front && npm run build:backend && electron-builder -m",
+    "dist:mac:unsigned": "npm run build:front && npm run build:backend && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -m -p never",
+    "dist:mac:unsigned:arm64": "npm run build:front && npm run build:backend && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -m -p never --arm64",
+    "dist:mac:unsigned:x64": "npm run build:front && npm run build:backend && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -m -p never --x64",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -83,8 +82,11 @@
       "icon": "public/hospital_icon.ico"
     },
     "mac": {
-      "target": "dmg",
-      "icon": "public/hospital_icon.png",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "public/hospital_icon.icns",
       "category": "public.app-category.medical"
     },
     "linux": {
