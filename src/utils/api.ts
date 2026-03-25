@@ -1,7 +1,35 @@
-const rawBase = (import.meta as any).env?.VITE_API_URL as string | undefined
-const baseURL = rawBase
-  ? (/^https?:/i.test(rawBase) ? rawBase : `http://127.0.0.1:4000${rawBase}`)
-  : 'http://127.0.0.1:4000/api'
+// Dynamic base URL - reads from Electron app-config.json at runtime
+let _cachedBaseURL: string | null = null
+
+async function resolveBaseURL(): Promise<string> {
+  if (_cachedBaseURL) return _cachedBaseURL
+  
+  // Check for VITE_API_URL env first
+  const rawBase = (import.meta as any).env?.VITE_API_URL as string | undefined
+  if (rawBase) {
+    _cachedBaseURL = /^https?:/i.test(rawBase) ? rawBase : `http://127.0.0.1:4000${rawBase}`
+    return _cachedBaseURL
+  }
+  
+  // In Electron, check for app-config.json
+  if (typeof window !== 'undefined' && (window as any).electronAPI?.getConfig) {
+    try {
+      const config = await (window as any).electronAPI.getConfig()
+      if (config?.remoteApiBaseUrl && typeof config.remoteApiBaseUrl === 'string') {
+        const base = config.remoteApiBaseUrl.replace(/\/$/, '')
+        _cachedBaseURL = `${base}/api`
+        return _cachedBaseURL
+      }
+    } catch {}
+  }
+  
+  // Default fallback
+  _cachedBaseURL = 'http://127.0.0.1:4000/api'
+  return _cachedBaseURL
+}
+
+// Initialize base URL on load
+resolveBaseURL()
 
 function getToken(path?: string) {
   try {
@@ -397,13 +425,15 @@ export const corporateApi = {
 }
 
 export async function api(path: string, init?: RequestInit) {
+  // Ensure base URL is resolved before making request
+  const base = await resolveBaseURL()
   const token = getToken(path)
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(init?.headers as any || {}),
   }
   if (token) headers['Authorization'] = `Bearer ${token}`
-  const res = await fetch(`${baseURL}${path}`, { ...init, headers })
+  const res = await fetch(`${base}${path}`, { ...init, headers })
   if (!res.ok) {
     const text = await res.text()
     throw new Error(text || res.statusText)

@@ -334,6 +334,11 @@ ipcMain.handle('print:current', async (event, options = {}) => {
   });
 });
 
+// IPC: Get app config for renderer
+ipcMain.handle('config:get', () => {
+  return appConfig || {};
+});
+
 ipcMain.handle('shell:open-path', async (_event, p) => {
   try {
     if (typeof p !== 'string' || !p.trim()) return { ok: false, error: 'Invalid path' }

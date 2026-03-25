@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Folder dialog
   openFolderDialog: () => ipcRenderer.invoke('dialog:open-folder'),
   closeSplash: () => ipcRenderer.invoke('splash:ready'),
+  // Config
+  getConfig: () => ipcRenderer.invoke('config:get'),
   // Printing helpers
   printCurrent: (options) => ipcRenderer.invoke('print:current', options || {}),
   printHTML: (html, options) => ipcRenderer.invoke('print:html', html, options || {}),
